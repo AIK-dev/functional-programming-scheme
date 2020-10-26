@@ -1,0 +1,70 @@
+#lang racket
+
+(define (leftTree tree)
+  (cadr tree))
+(define (rightTree tree)
+  (caddr tree))
+(define (entry tree)
+  (car tree))
+(define (makeTree ent l r)
+  (list ent l r))
+(define (leaf? tree)
+  (and (null? leftTree) (null? rightTree)))
+
+(define (minBin tree)
+  (if (leaf? tree )
+      (entry tree)
+      (minBin (leftTree tree))))
+
+(define (inorder tree)
+  (cond ((null? tree) '())
+        ((leaf? tree) (display (entry tree)) (display " "))
+        (else (inorder (leftTree tree))
+              (display (entry tree))
+              (display " ")
+              (inorder (rightTree tree)))))
+;This aint finished
+(define (include a tree)
+  (cond ((null? tree)
+         (makeTree a '() '()))
+        ((< a (entry tree))
+         (makeTree (entry tree)
+                   (include a (leftTree tree))
+                   (rightTree tree)))
+        (else ;(> a (entry tree))
+         (makeTree (entry tree)
+                   (leftTree tree)
+                   (include a (rightTree tree))))))
+
+(define (delBin x tree)
+  (cond ((and (= x (entry tree))
+              (null? (leftTree tree)))
+         (rightTree tree))
+        ((and (= x (entry tree))
+              (null? (rightTree tree)))
+         (leftTree tree))
+        ((< x (entry tree))
+         (makeTree (entry tree)
+                   (delBin x (leftTree tree))
+                   (rightTree tree)))
+        ((> x (entry tree))
+         (makeTree (entry tree)
+                   (leftTree tree)
+                   (delBin x (rightTree tree))))
+        (else (makeTree (minBin (rightTree tree))
+                        (leftTree tree)
+                        (delBin (minBin (rightTree tree)) (rightTree tree))))))
+
+;Gives binary tree from given elements
+(define (gen-binary l)
+  (define (iter xs result)
+    (if (null? xs) result
+        (iter (cdr xs) (include (car xs) result))))
+  (iter l '()))
+
+;Sorting by including in binary tree and then inorder traversal
+(define (sort l)
+  (inorder (gen-binary l)))
+
+(sort '(5 56 1 24 5 22 44))
+
